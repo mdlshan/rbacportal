@@ -22,28 +22,43 @@ function Login({ onLogin }) {
 
 
 return (
-        <main>
-            <h1>Login</h1>
+        <main className="h-screen flex items-center justify-center">
+    <div className="w-full max-w-sm">
+        
+        <h1 className="text-2xl font-bold ">
+            Login
+        </h1>
 
-            <form onSubmit={handleSubmit}>
-                <input
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                />
+        <form onSubmit={handleSubmit} className="flex flex-col">
 
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
+            <input
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="border p-3"
+            />
 
-                <button type="submit">Login</button>
-            </form>
+            <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="border p-3"
+            />
 
-            {error && <p>{error}</p>}
-        </main>
+            <button
+                type="submit"
+                className="bg-black text-white p-3"
+            >
+                Login
+            </button>
+
+        </form>
+
+        {error && <p className="mt-4">{error}</p>}
+
+    </div>
+</main>
     )
 }
 

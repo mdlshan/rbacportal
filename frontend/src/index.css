@@ -1,22 +1,2 @@
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f2f2f2;
-}
-header {
-  padding: 15px;
-  background: rgb(193, 193, 216);
-  color: white;
-}
-#root > div {
-  display: flex;
-}
-aside {
-}
-main {
-  padding: 20px;
-}
-button {
-  margin: 5px;
-  padding: 10px;
-}
+@import "tailwindcss";
+
