@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Login from "./pages/login";
 import Dashboard from "./pages/dashboard";
@@ -14,6 +14,12 @@ function App() {
     !!localStorage.getItem("access")
   );
   const [page, setPage] = useState("dashboard");
+
+  useEffect(() => {
+    const handleSessionExpired = () => setLoggedIn(false);
+    window.addEventListener("auth:logout", handleSessionExpired);
+    return () => window.removeEventListener("auth:logout", handleSessionExpired);
+  }, []);
 
   if (!loggedIn) {
     return <Login onLogin={() => setLoggedIn(true)} />;
