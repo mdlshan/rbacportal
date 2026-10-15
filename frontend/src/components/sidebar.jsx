@@ -5,11 +5,11 @@ const navigation = [
     ["user", "people", "Users"],
 ];
 
-export default function Sidebar({ page, setPage }) {
+export default function Sidebar({ page, setPage, features = [] }) {
     return (
         <aside className="min-h-screen w-60 shrink-0 border-r border-gray-200 bg-white p-3">
             <nav aria-label="Main navigation" className="space-y-1">
-                {navigation.map(([id, icon, label]) => (
+                {navigation.filter(([, , , feature]) => !feature || features.includes(feature)).map(([id, icon, label]) => (
                     <button
                         key={id}
                         type="button"

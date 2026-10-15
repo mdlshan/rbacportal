@@ -7,22 +7,43 @@ import Maintenance from "./pages/maintenance";
 import Users from "./pages/users";
 import Profile from "./pages/profile";
 import Page from "./components/page";
-import { logout } from "./api";
+import { getMe, logout } from "./api";
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(
     !!localStorage.getItem("access")
   );
   const [page, setPage] = useState("dashboard");
+  const [features, setFeatures] = useState([]);
 
   useEffect(() => {
-    const handleSessionExpired = () => setLoggedIn(false);
+    const handleSessionExpired = () => {
+      setFeatures([]);
+      setLoggedIn(false);
+    };
     window.addEventListener("auth:logout", handleSessionExpired);
     return () => window.removeEventListener("auth:logout", handleSessionExpired);
   }, []);
 
+  useEffect(() => {
+    if (!loggedIn) return;
+    const refreshFeatures = () => getMe().then((user) => setFeatures(user.features || [])).catch(() => {});
+    refreshFeatures();
+    window.addEventListener("roles:updated", refreshFeatures);
+    return () => window.removeEventListener("roles:updated", refreshFeatures);
+  }, [loggedIn]);
+
   if (!loggedIn) {
-    return <Login onLogin={() => setLoggedIn(true)} />;
+    return <Login onLogin={() => {
+      setFeatures([]);
+      setLoggedIn(true);
+    }} />;
+  }
+
+  function handleLogout() {
+    logout();
+    setFeatures([]);
+    setLoggedIn(false);
   }
 
   const pages = {
@@ -30,18 +51,15 @@ function App() {
     groundops: <GroundOperations />,
     maintenance: <Maintenance />,
     user: <Users />,
-    profile: <Profile />,
+    profile: <Profile onLogout={handleLogout} />,
   };
 
   return (
     <Page
       page={page}
       setPage={setPage}
+      features={features}
       onOpenProfile={() => setPage("profile")}
-      onLogout={() => {
-        logout();
-        setLoggedIn(false);
-      }}
     >
       {pages[page]}
     </Page>

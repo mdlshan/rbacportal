@@ -10,5 +10,8 @@ urlpatterns = [
     path("groundops/",groundops.as_view()),
     path ("maintenance/",maintenance.as_view()),
     path("users/",users.as_view()),
+    path("users/<int:user_id>/", UserDetail.as_view()),
+    path("roles/", Roles.as_view()),
+    path("roles/<int:role_id>/", RoleDetail.as_view()),
 ]
 

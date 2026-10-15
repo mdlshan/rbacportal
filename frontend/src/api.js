@@ -1,8 +1,10 @@
 const API = "http://127.0.0.1:8000/api"
 
-async function authorizedFetch(url) {
+async function authorizedFetch(url, options = {}) {
     const sendRequest = () => fetch(url, {
+        ...options,
         headers: {
+            ...options.headers,
             Authorization: `Bearer ${localStorage.getItem("access")}`,
         },
     })
@@ -53,6 +55,23 @@ export async function login(username, password) {
     return data
 }
 
+
+
+export async function updateMyProfile(profile) {
+  const response = await authorizedFetch(`${API}/me/`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(profile),
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || "Could not save profile");
+  return data;
+}
+
+
+
+
 export async function getMe() {
     const response = await authorizedFetch(`${API}/me/`)
 
@@ -75,4 +94,64 @@ export async function getPage(endpoint) {
 export function logout() {
     localStorage.removeItem("access")
     localStorage.removeItem("refresh")
+}
+
+export async function createUser(user) {
+    const response = await authorizedFetch(`${API}/users/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(user),
+    })
+    const data = await response.json()
+    if (!response.ok) throw new Error(data.detail || "Could not create user")
+    return data
+}
+
+export async function updateUser(id, user) {
+    const response = await authorizedFetch(`${API}/users/${id}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(user),
+    })
+    const data = await response.json()
+    if (!response.ok) throw new Error(data.detail || "Could not update user")
+    return data
+}
+
+export async function deleteUser(id) {
+    const response = await authorizedFetch(`${API}/users/${id}/`, { method: "DELETE" })
+    if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.detail || "Could not delete user")
+    }
+}
+
+export async function createRole(role) {
+    const response = await authorizedFetch(`${API}/roles/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(role),
+    })
+    const data = await response.json()
+    if (!response.ok) throw new Error(data.detail || "Could not create role")
+    return data
+}
+
+export async function updateRole(id, role) {
+    const response = await authorizedFetch(`${API}/roles/${id}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(role),
+    })
+    const data = await response.json()
+    if (!response.ok) throw new Error(data.detail || "Could not update role")
+    return data
+}
+
+export async function deleteRole(id) {
+    const response = await authorizedFetch(`${API}/roles/${id}/`, { method: "DELETE" })
+    if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.detail || "Could not delete role")
+    }
 }
