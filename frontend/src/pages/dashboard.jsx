@@ -33,7 +33,6 @@ function Dashboard() {
     return (
         <section>
             <h1>Dashboard</h1>
-            <p>Signed in as <strong>{user.username}</strong> ({user.role || "No role assigned"})</p>
             
 
 
