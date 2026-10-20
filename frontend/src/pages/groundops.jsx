@@ -1,28 +1,12 @@
-import { useEffect, useState } from "react"
-import { getPage } from "../api"
+import { useEffect, useState } from "react";
+import { getPage } from "../api";
+import AccessDenied from "./accessDenied";
 
-function GroundOperations() {
-    const [status, setStatus] = useState(null)
-
-    useEffect(() => {
-        getPage("groundops").then((result) => {
-            setStatus(result.status)
-        })
-    }, [])
-
-    if (status === 403) {
-        return <h1>403 - Access denied</h1>
-    }
-
-    if (status === 401) {
-        return <h1>401 - Authentication required</h1>
-    }
-
-    if (status === 200) {
-        return <h1>Ground Operations</h1>
-    }
-
-    return <p>Loading...</p>
+export default function GroundOperations() {
+  const [result, setResult] = useState(null);
+  useEffect(() => { getPage("groundops").then(setResult).catch(() => {}); }, []);
+  if (!result) return <p>Loading ground operations...</p>;
+  if (result.status === 403) return <AccessDenied />;
+  if (result.status === 401) return <p>Please log in again.</p>;
+  return <section className="page-stack"><div className="page-heading"><h1>Ground operations</h1></div><article className="card"><p>Ground operations page.</p></article></section>;
 }
-
-export default GroundOperations
