@@ -1,22 +1,5 @@
-import { useEffect, useState } from "react"
-import { getMe } from "../api"
+import IconButton from "./iconButton";
 
-function Header({ onLogout }) {
-    const [user, setUser] = useState(null)
-
-    useEffect(() => {
-        getMe().then(setUser).catch(() => {})
-    }, [])
-
-    return (
-        <header style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
-            
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                <span>{user ? `${user.username} (${user.role || "No role"})` : "Loading profile..."}</span>
-                <button onClick={onLogout}>Log out</button>
-            </div>
-        </header>
-    )
+export default function Header({ onOpenProfile }) {
+  return <header className="topbar"><span className="topbar-title">RBAC Portal</span><IconButton icon="profile" label="Open profile" variant="profile" onClick={onOpenProfile} /></header>;
 }
-
-export default Header
