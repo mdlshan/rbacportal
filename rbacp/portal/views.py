@@ -3,11 +3,12 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import RoleAccess, UserProfile
+from .models import Notice, RoleAccess, UserProfile
 from .permissions import PERMISSION_OPTIONS, access, role_features
 from .serializers import UserProfileSerializer
 
@@ -119,6 +120,64 @@ class dashboard(APIView):
 
     def get(self, _request):
         return Response({"message": "access granted"})
+
+
+class Notices(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user_roles = request.user.groups.all()
+        notices = Notice.objects.filter(Q(everyone=True) | Q(roles__in=user_roles) | Q(users=request.user)).select_related("created_by").prefetch_related("roles").distinct()
+        return Response({
+            "notices": [{
+                "id": notice.id,
+                "title": notice.title,
+                "message": notice.message,
+                "created_at": notice.created_at,
+                "author": notice.created_by.get_full_name() or notice.created_by.username if notice.created_by else "Former user",
+                "audience": "Everyone" if notice.everyone else (", ".join(role.name for role in notice.roles.all()) or "Selected users"),
+            } for notice in notices],
+            "can_publish": _is_admin(request.user),
+            "roles": [{"id": role.id, "name": role.name} for role in Group.objects.order_by("name")] if _is_admin(request.user) else [],
+        })
+
+    def post(self, request):
+        if not _is_admin(request.user):
+            return Response({"detail": "Only an admin can publish notices."}, status=403)
+        title = request.data.get("title", "").strip() if isinstance(request.data.get("title", ""), str) else ""
+        message = request.data.get("message", "").strip() if isinstance(request.data.get("message", ""), str) else ""
+        audience = request.data.get("audience")
+        role_ids = request.data.get("role_ids", [])
+        user_ids = request.data.get("user_ids", [])
+        if not title or len(title) > 120 or not message:
+            return Response({"detail": "Enter a title (up to 120 characters) and a message."}, status=400)
+        if audience not in {"everyone", "roles", "users"}:
+            return Response({"detail": "Choose Everyone, selected roles, or selected users."}, status=400)
+        if any(not isinstance(ids, list) or any(not isinstance(value, int) or isinstance(value, bool) for value in ids) for ids in (role_ids, user_ids)):
+            return Response({"detail": "Choose valid recipients."}, status=400)
+        if audience == "roles" and not role_ids:
+            return Response({"detail": "Select at least one role."}, status=400)
+        if audience == "users" and not user_ids:
+            return Response({"detail": "Select at least one user."}, status=400)
+        roles = list(Group.objects.filter(id__in=role_ids))
+        users = list(User.objects.filter(id__in=user_ids, is_active=True))
+        if audience == "roles" and len({str(role.pk) for role in roles}) != len({str(role_id) for role_id in role_ids}):
+            return Response({"detail": "One or more selected roles are invalid."}, status=400)
+        if audience == "users" and len({str(user.pk) for user in users}) != len({str(user_id) for user_id in user_ids}):
+            return Response({"detail": "One or more selected users are invalid or inactive."}, status=400)
+        notice = Notice.objects.create(title=title, message=message, everyone=audience == "everyone", created_by=request.user)
+        if audience == "roles":
+            notice.roles.set(roles)
+        elif audience == "users":
+            notice.users.set(users)
+        return Response({"id": notice.id, "detail": "Notice published."}, status=201)
+
+    def delete(self, request, notice_id=None):
+        if not _is_admin(request.user):
+            return Response({"detail": "Only an admin can remove notices."}, status=403)
+        notice = get_object_or_404(Notice, pk=notice_id)
+        notice.delete()
+        return Response(status=204)
 
 
 class groundops(APIView):

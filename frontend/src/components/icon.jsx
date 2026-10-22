@@ -8,6 +8,9 @@ const icons = {
   logout: "log-out",
   down: "chevron-down",
   add: "plus",
+  close: "x",
+  search: "search",
+  send: "forward",
   edit: "pen",
   delete: "trash",
 };
@@ -18,3 +21,5 @@ export default function Icon({ name, size = 20 }) {
   const url = iconUrl(name);
   return <span className={`app-icon icon-${name}`} aria-hidden="true" style={{ width: size, height: size, maskImage: `url("${url}")`, WebkitMaskImage: `url("${url}")` }} />;
 }
+
+//https://lucide.dev/icons//

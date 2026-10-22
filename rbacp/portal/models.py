@@ -22,3 +22,19 @@ class ProfileSocialLink(models.Model):
 class RoleAccess(models.Model):
     group = models.OneToOneField(Group, on_delete=models.CASCADE, related_name="app_access")
     features = models.JSONField(default=list, blank=True)
+
+
+class Notice(models.Model):
+    title = models.CharField(max_length=120)
+    message = models.TextField()
+    everyone = models.BooleanField(default=True)
+    roles = models.ManyToManyField(Group, blank=True, related_name="notices")
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name="targeted_notices")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="published_notices")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
