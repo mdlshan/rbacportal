@@ -52,6 +52,11 @@ export async function getPage(endpoint) {
   const response = await authorizedFetch("/" + endpoint + "/");
   return { status: response.status, data: await response.json() };
 }
+export async function getNotices() { return read(await authorizedFetch("/notices/"), "Could not load notices"); }
+export async function createNotice(notice) {
+  return read(await authorizedFetch("/notices/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(notice) }), "Could not publish notice");
+}
+export async function deleteNotice(id) { return read(await authorizedFetch("/notices/" + id + "/", { method: "DELETE" }), "Could not remove notice"); }
 export async function createUser(user) {
   return read(await authorizedFetch("/users/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(user) }), "Could not create user");
 }
